@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { LoggerMiddleware } from 'src/@shared/middlewares/logger.middleware';
 
 @Module({
   imports: [
@@ -25,4 +26,10 @@ import { AppService } from './app.service';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    if (process.env.NODE_ENV === 'development') {
+      consumer.apply(LoggerMiddleware).forRoutes('*');
+    }
+  }
+}
