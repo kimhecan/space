@@ -4,14 +4,23 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from 'src/@shared/middlewares/logger.middleware';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { CommonModule } from './common/common.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { PUBLIC_FOLDER_PATH } from 'src/common/constant/path';
+import { UserModel } from 'src/user/entity/user.entity';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: PUBLIC_FOLDER_PATH,
+      serveRoot: '/public',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env.${process.env.NODE_ENV}`,
     }),
-
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -19,9 +28,12 @@ import { LoggerMiddleware } from 'src/@shared/middlewares/logger.middleware';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [],
+      entities: [UserModel],
       synchronize: true,
     }),
+    AuthModule,
+    UserModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],
