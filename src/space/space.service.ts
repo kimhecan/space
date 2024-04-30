@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -245,6 +246,16 @@ export class SpaceService {
     spaceId: number;
     role: string;
   }) {
+    const isRoleInUse = await this.userSpaceRepository.count({
+      where: { roleName: role },
+    });
+
+    if (isRoleInUse > 0) {
+      throw new BadRequestException(
+        '역할이 현재 사용 중이므로 삭제할 수 없습니다.',
+      );
+    }
+
     await this.userSpaceRepository.softDelete({
       user: {
         id: userId,
