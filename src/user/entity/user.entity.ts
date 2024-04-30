@@ -1,6 +1,8 @@
 import { Exclude, Transform } from 'class-transformer';
 import { join } from 'path';
+import { ChatModel } from 'src/chat/entity/chat.entity';
 import { USER_PUBLIC_IMAGE_PATH } from 'src/common/constant/path';
+import { PostModel } from 'src/post/entity/post.entity';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { Gender } from 'src/user/type';
 import {
@@ -53,4 +55,10 @@ export class UserModel {
   // 관계정의
   @OneToMany(() => UserSpaceModel, (userSpace) => userSpace.user)
   userSpace: UserSpaceModel[];
+
+  @OneToMany(() => PostModel, (post) => post.user)
+  posts: PostModel[];
+
+  @OneToMany(() => ChatModel, (chat) => chat.user)
+  chats: ChatModel[];
 }

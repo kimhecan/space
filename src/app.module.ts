@@ -14,6 +14,8 @@ import { SpaceModule } from './space/space.module';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { SpaceModel } from 'src/space/entity/space.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
+import { PostModule } from './post/post.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
     UserModule,
     CommonModule,
     SpaceModule,
+    PostModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
