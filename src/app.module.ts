@@ -10,6 +10,10 @@ import { CommonModule } from './common/common.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { PUBLIC_FOLDER_PATH } from 'src/common/constant/path';
 import { UserModel } from 'src/user/entity/user.entity';
+import { SpaceModule } from './space/space.module';
+import { UserSpaceModel } from 'src/user/entity/user-space.entity';
+import { SpaceModel } from 'src/space/entity/space.entity';
+import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 
 @Module({
   imports: [
@@ -28,12 +32,13 @@ import { UserModel } from 'src/user/entity/user.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [UserModel],
+      entities: [UserModel, UserSpaceModel, SpaceModel, SpaceRoleModel],
       synchronize: true,
     }),
     AuthModule,
     UserModule,
     CommonModule,
+    SpaceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,12 +1,14 @@
 import { Exclude, Transform } from 'class-transformer';
 import { join } from 'path';
 import { USER_PUBLIC_IMAGE_PATH } from 'src/common/constant/path';
+import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { Gender } from 'src/user/type';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -47,4 +49,8 @@ export class UserModel {
   @DeleteDateColumn()
   @Exclude()
   deletedAt: Date | null;
+
+  // 관계정의
+  @OneToMany(() => UserSpaceModel, (userSpace) => userSpace.user)
+  userSpace: UserSpaceModel[];
 }
