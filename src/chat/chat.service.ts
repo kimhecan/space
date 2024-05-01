@@ -100,7 +100,7 @@ export class ChatService {
       throw new UnauthorizedException('댓글을 삭제할 권한이 없습니다.');
     }
 
-    return await this.chatRepository.delete({
+    return await this.chatRepository.softDelete({
       id: chatId,
       post: {
         id: postId,

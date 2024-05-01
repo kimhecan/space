@@ -29,7 +29,6 @@ export class AuthController {
     return await this.authService.createUser(createUserDto);
   }
 
-  // accessToken 재발급하는 API
   @Get('token/access')
   @UseGuards(RefreshTokenGuard)
   accessToken(@Headers('Authorization') rowToken: string) {
@@ -44,7 +43,6 @@ export class AuthController {
     };
   }
 
-  // refreshToken 재발급하는 API
   @Get('token/refresh')
   @UseGuards(RefreshTokenGuard)
   refreshToken(@Headers('Authorization') rowToken: string) {
