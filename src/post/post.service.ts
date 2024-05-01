@@ -75,6 +75,30 @@ export class PostService {
     return post;
   }
 
+  async getPost(spaceId: number, postId: number) {
+    const post = await this.postRepository.findOne({
+      where: {
+        id: postId,
+        space: {
+          id: spaceId,
+        },
+      },
+      relations: [
+        'user',
+        'chats',
+        'chats.user',
+        'chats.replies',
+        'chats.replies.user',
+      ],
+    });
+
+    if (!post) {
+      throw new NotFoundException('게시글이 존재하지 않습니다.');
+    }
+
+    return post;
+  }
+
   async listPostFromSpace(spaceId: number, userId: number) {
     const userExistsInSpace = await this.userExistsInSpace(spaceId, userId);
 

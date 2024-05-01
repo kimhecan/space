@@ -40,6 +40,15 @@ export class PostController {
     return this.postService.listPostFromMe(user.id);
   }
 
+  @Get(':postId')
+  @UseGuards(AccessTokenGuard)
+  async getPost(
+    @Query('spaceId', ParseIntPipe) spaceId: number,
+    @Param('postId', ParseIntPipe) postId: number,
+  ) {
+    return this.postService.getPost(spaceId, postId);
+  }
+
   @Delete(':postId')
   @UseGuards(AccessTokenGuard)
   async deletePost(
