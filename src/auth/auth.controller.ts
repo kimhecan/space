@@ -1,10 +1,14 @@
-import { Body, Controller, Post, UseGuards, Headers } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { CreateUserDto } from 'src/auth/dto/create-user.dto';
 import {
-  AccessTokenGuard,
-  RefreshTokenGuard,
-} from 'src/auth/guard/bearer-token.guard';
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { CreateUserDto } from 'src/auth/dto/create-user.dto';
+import { RefreshTokenGuard } from 'src/auth/guard/bearer-token.guard';
+import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
@@ -26,9 +30,9 @@ export class AuthController {
   }
 
   // accessToken 재발급하는 API
-  @Post('token/access')
-  @UseGuards(AccessTokenGuard)
-  accessToken(@Headers('authorization') rowToken: string) {
+  @Get('token/access')
+  @UseGuards(RefreshTokenGuard)
+  accessToken(@Headers('Authorization') rowToken: string) {
     const token = this.authService.extractTokenFromHeader(rowToken);
 
     const newToken = this.authService.refreshAccessToken(token, true);
@@ -41,9 +45,9 @@ export class AuthController {
   }
 
   // refreshToken 재발급하는 API
-  @Post('token/refresh')
+  @Get('token/refresh')
   @UseGuards(RefreshTokenGuard)
-  refreshToken(@Headers('authorization') rowToken: string) {
+  refreshToken(@Headers('Authorization') rowToken: string) {
     const token = this.authService.extractTokenFromHeader(rowToken);
 
     const newToken = this.authService.refreshAccessToken(token, false);

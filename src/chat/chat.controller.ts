@@ -6,6 +6,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { User } from 'src/@shared/decorator/user.decorator';
@@ -13,7 +14,7 @@ import { AccessTokenGuard } from 'src/auth/guard/bearer-token.guard';
 import { ChatService } from './chat.service';
 import { CreateChatDto } from './dto/create-chat.dto';
 
-@Controller('space/:spaceId/post/:postId/chat')
+@Controller('chat')
 export class ChatController {
   constructor(private readonly chatService: ChatService) {}
 
@@ -21,7 +22,7 @@ export class ChatController {
   @UseGuards(AccessTokenGuard)
   create(
     @User() user,
-    @Param('postId', ParseIntPipe) postId,
+    @Query('postId', ParseIntPipe) postId,
     @Body() createChatDto: CreateChatDto,
   ) {
     return this.chatService.createChat(createChatDto, user.id, postId);
@@ -29,7 +30,7 @@ export class ChatController {
 
   @Get()
   @UseGuards(AccessTokenGuard)
-  findChatFromPost(@Param('postId', ParseIntPipe) postId) {
+  findChatFromPost(@Query('postId', ParseIntPipe) postId) {
     return this.chatService.findChatFromPost(postId);
   }
 
@@ -52,8 +53,8 @@ export class ChatController {
   @Delete(':id')
   remove(
     @User() user,
-    @Param('spaceId', ParseIntPipe) spaceId: number,
-    @Param('postId', ParseIntPipe) postId: number,
+    @Query('spaceId', ParseIntPipe) spaceId: number,
+    @Query('postId', ParseIntPipe) postId: number,
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.chatService.removeChat({

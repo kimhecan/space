@@ -30,6 +30,9 @@ export class ChatService {
       post: {
         id: postId,
       },
+      parent: {
+        id: createChatDto.parentId,
+      },
     });
 
     return await this.chatRepository.save(chat);

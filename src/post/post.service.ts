@@ -75,7 +75,7 @@ export class PostService {
     return post;
   }
 
-  async listPost(spaceId: number, userId: number) {
+  async listPostFromSpace(spaceId: number, userId: number) {
     const userExistsInSpace = await this.userExistsInSpace(spaceId, userId);
 
     if (!userExistsInSpace) {
@@ -89,6 +89,18 @@ export class PostService {
         },
       },
       relations: ['chats', 'chats.user'],
+    });
+
+    return posts;
+  }
+
+  async listPostFromMe(userId: number) {
+    const posts = await this.postRepository.find({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
     });
 
     return posts;
