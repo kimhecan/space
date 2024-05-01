@@ -1,11 +1,12 @@
-import { BadRequestException, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import * as multer from 'multer';
 import { extname } from 'path';
-import { USER_IMAGE_PATH } from 'src/common/constant/path';
+
 import { v4 as uuid } from 'uuid';
 import { CommonController } from './common.controller';
 import { CommonService } from './common.service';
+import { PUBLIC_FOLDER_PATH } from 'src/common/constant/path';
 
 @Module({
   imports: [
@@ -15,20 +16,19 @@ import { CommonService } from './common.service';
         fileSize: 5 * 1024 * 1024,
       },
       fileFilter(req, file, callback) {
-        const ext = extname(file.originalname);
-
-        if (ext !== '.jpg' && ext !== '.png' && ext !== '.jpeg') {
-          return callback(
-            new BadRequestException('Only images are allowed'),
-            false,
-          );
-        }
+        // const ext = extname(file.originalname);
+        // if (ext !== '.jpg' && ext !== '.png' && ext !== '.jpeg') {
+        //   return callback(
+        //     new BadRequestException('Only images are allowed'),
+        //     false,
+        //   );
+        // }
 
         return callback(null, true);
       },
       storage: multer.diskStorage({
         destination: function (req, res, cb) {
-          cb(null, USER_IMAGE_PATH);
+          cb(null, PUBLIC_FOLDER_PATH);
         },
         filename: function (req, file, cb) {
           cb(null, `${uuid()}${extname(file.originalname)}`);

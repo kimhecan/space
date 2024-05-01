@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { ChatModel } from 'src/chat/entity/chat.entity';
+import { PostType } from 'src/post/type';
 import { SpaceModel } from 'src/space/entity/space.entity';
 import { UserModel } from 'src/user/entity/user.entity';
 import {
@@ -13,11 +14,6 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
-
-export enum PostType {
-  Notice = '공지',
-  Question = '질문',
-}
 
 @Entity('post')
 export class PostModel {
@@ -37,7 +33,7 @@ export class PostModel {
   })
   type: PostType;
 
-  @Column({ nullable: true })
+  @Column('boolean', { nullable: true })
   anonymous: boolean;
 
   @Column({ nullable: true })
@@ -55,6 +51,7 @@ export class PostModel {
   @Exclude()
   deletedAt: Date | null;
 
+  // 관계 정의
   @ManyToOne(() => UserModel, (user) => user.posts)
   @JoinColumn({ name: 'userId' })
   user: UserModel;

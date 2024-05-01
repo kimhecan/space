@@ -16,6 +16,8 @@ import { SpaceModel } from 'src/space/entity/space.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 import { PostModule } from './post/post.module';
 import { ChatModule } from './chat/chat.module';
+import { PostModel } from 'src/post/entity/post.entity';
+import { ChatModel } from 'src/chat/entity/chat.entity';
 
 @Module({
   imports: [
@@ -34,7 +36,14 @@ import { ChatModule } from './chat/chat.module';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [UserModel, UserSpaceModel, SpaceModel, SpaceRoleModel],
+      entities: [
+        UserModel,
+        UserSpaceModel,
+        SpaceModel,
+        SpaceRoleModel,
+        PostModel,
+        ChatModel,
+      ],
       synchronize: true,
     }),
     AuthModule,

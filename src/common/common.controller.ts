@@ -11,10 +11,9 @@ import { CommonService } from './common.service';
 export class CommonController {
   constructor(private readonly commonService: CommonService) {}
 
-  @Post('images')
+  @Post('files')
   @UseInterceptors(FilesInterceptor('files'))
   postImage(@UploadedFiles() files?: Array<Express.Multer.File>) {
-    console.log(files, 'files');
     return {
       fileNames: files.map((file) => file.filename),
     };
