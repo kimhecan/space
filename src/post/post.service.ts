@@ -10,6 +10,8 @@ import { Repository } from 'typeorm';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
+import { ChatModel } from 'src/chat/entity/chat.entity';
+import { ExtendedPostModel } from 'src/post/type';
 
 @Injectable()
 export class PostService {
@@ -54,10 +56,19 @@ export class PostService {
       },
     });
 
+    // 참여자는 "질문"만 작성할 수 있습니다.
     if (role.type === 'participant' && createPostDto.type === 'Notice') {
       throw new UnauthorizedException('공지사항을 작성할 권한이 없습니다.');
     }
 
+    // 익명 상태로 게시글을 작성할 수 있는 것은 “참여자"뿐입니다.
+    if (role.type === 'admin' && createPostDto.anonymous) {
+      throw new BadRequestException(
+        'admin 권한인 유저가 익명으로 게시글을 작성할 수 없습니다.',
+      );
+    }
+
+    // “질문" 게시글은 익명 상태로 작성하는 것이 가능
     if (createPostDto.type === 'Notice' && createPostDto.anonymous) {
       throw new BadRequestException('익명으로 공지사항을 작성할 수 없습니다.');
     }
@@ -75,7 +86,7 @@ export class PostService {
     return post;
   }
 
-  async getPost(spaceId: number, postId: number) {
+  async getPost(spaceId: number, postId: number, userId: number) {
     const post = await this.postRepository.findOne({
       where: {
         id: postId,
@@ -96,7 +107,19 @@ export class PostService {
       throw new NotFoundException('게시글이 존재하지 않습니다.');
     }
 
-    return post;
+    const { isAdminUser, isPostOwner } = await this.getPostOwnerAndAdminUser(
+      spaceId,
+      post.user.id,
+      userId,
+    );
+
+    // 익명 상태로 작성된 게시글은 작성자 본인 또는 관리자만 조회 가능
+    return this.removeUserInfoForAnonymous({
+      post,
+      isPostOwner,
+      isAdminUser,
+      userId,
+    });
   }
 
   async listPostFromSpace(spaceId: number, userId: number) {
@@ -112,10 +135,59 @@ export class PostService {
           id: spaceId,
         },
       },
-      relations: ['chats', 'chats.user'],
+      relations: ['chats', 'chats.user', 'chats.replies', 'chats.replies.user'],
     });
 
-    return posts;
+    const postStats = await Promise.all(
+      posts.map(async (post) => {
+        const chatCount = post.chats.filter(
+          (chat) => chat.user.id !== post.user.id,
+        ).length;
+        const uniqueChatters = new Set(
+          post.chats
+            .filter((chat) => chat.user.id !== post.user.id)
+            .map((chat) => chat.user.id),
+        ).size;
+        return { post, chatCount, uniqueChatters };
+      }),
+    );
+
+    const sortedPosts = postStats
+      .sort((a, b) => {
+        if (a.chatCount === b.chatCount) {
+          return b.uniqueChatters - a.uniqueChatters;
+        }
+        return b.chatCount - a.chatCount;
+      })
+      .slice(0, 5);
+
+    const popularPostsIds = new Set(sortedPosts.map((item) => item.post.id));
+
+    const anonymousProcessedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const { isPostOwner, isAdminUser } =
+          await this.getPostOwnerAndAdminUser(spaceId, post.user.id, userId);
+
+        return this.removeUserInfoForAnonymous({
+          post,
+          isPostOwner,
+          isAdminUser,
+          userId,
+        });
+      }),
+    );
+
+    const popularProcessedPosts = anonymousProcessedPosts.map(async (post) => {
+      const newPost = { ...post } as ExtendedPostModel;
+      if (popularPostsIds.has(post.id)) {
+        newPost.isPopular = true;
+      } else {
+        newPost.isPopular = false;
+      }
+      return newPost;
+    });
+
+    return popularProcessedPosts;
   }
 
   async listPostFromMe(userId: number) {
@@ -173,5 +245,90 @@ export class PostService {
         id: spaceId,
       },
     });
+  }
+
+  async getPostOwnerAndAdminUser(
+    spaceId: number,
+    postUserId: number,
+    userId: number,
+  ) {
+    const isPostOwner = postUserId === userId;
+
+    const userSpaceRole = await this.userSpaceRepository.findOne({
+      where: {
+        space: {
+          id: spaceId,
+        },
+        user: {
+          id: userId,
+        },
+      },
+    });
+
+    const spaceRole = await this.SpaceRoleRepository.findOne({
+      where: {
+        name: userSpaceRole.roleName,
+      },
+    });
+
+    const isAdminUser = spaceRole.type === 'admin';
+
+    return {
+      isPostOwner,
+      isAdminUser,
+    };
+  }
+
+  async removeUserInfoForAnonymous({
+    post,
+    isPostOwner,
+    isAdminUser,
+    userId,
+  }: {
+    post: PostModel;
+    isPostOwner: boolean;
+    isAdminUser: boolean;
+    userId: number;
+  }) {
+    // 메인 게시글이 익명이고 사용자가 게시글의 소유자나 관리자가 아닌 경우, 게시글의 사용자 정보를 제거
+    if (post.anonymous && !(isPostOwner || isAdminUser)) {
+      post.user = null;
+    }
+
+    // 각 채팅과 대댓글에서도 익명 여부를 확인하고, 조건에 따라 사용자 정보 제거
+    post.chats.forEach((chat) => {
+      this.removeUserFromChat(chat, userId, isAdminUser);
+    });
+
+    return post;
+  }
+
+  private removeUserFromChat(
+    chat: ChatModel,
+    userId: number,
+    isAdminUser: boolean,
+  ) {
+    // 채팅이 익명이고 사용자가 채팅의 소유자나 관리자가 아닌 경우, 채팅의 사용자 정보를 제거
+    const isChatOwner = chat.user.id === userId;
+    if (chat.anonymous && !(isChatOwner || isAdminUser)) {
+      chat.user = null;
+    }
+
+    // 각 대댓글에 대해서도 동일한 조건 적용
+    chat.replies.forEach((reply) => {
+      this.removeUserFromReply(reply, userId, isAdminUser);
+    });
+  }
+
+  private removeUserFromReply(
+    reply: ChatModel,
+    userId: number,
+    isAdminUser: boolean,
+  ) {
+    // 대댓글이 익명이고 사용자가 대댓글의 소유자나 관리자가 아닌 경우, 대댓글의 사용자 정보를 제거
+    const isReplyOwner = reply.user.id === userId;
+    if (reply.anonymous && !(isReplyOwner || isAdminUser)) {
+      reply.user = null;
+    }
   }
 }

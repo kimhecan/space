@@ -81,7 +81,7 @@ export class SpaceController {
   ) {
     // 공간에 참여하기
     await this.spaceService.joinSpace({ user, spaceId, code, role });
-    return { message: 'Joined space successfully.' };
+    return { message: '조인에 성공했습니다.' };
   }
 
   @Delete(':spaceId')
@@ -131,5 +131,20 @@ export class SpaceController {
     await this.spaceService.deleteUserRole({ userId: user.id, spaceId, role });
 
     return { message: '사용자 역할이 성공적으로 삭제되었습니다.' };
+  }
+
+  @Get(':spaceId/code')
+  @UseGuards(AccessTokenGuard)
+  async getSpaceCode(
+    @User() user,
+    @Param('spaceId', ParseIntPipe) spaceId: number,
+  ) {
+    const isUserOwner = await this.spaceService.isUserOwner(user.id, spaceId);
+
+    if (!isUserOwner) {
+      throw new ForbiddenException('공간 소유자만 코드를 확인할 수 있습니다.');
+    }
+
+    return await this.spaceService.getSpaceCode(spaceId);
   }
 }

@@ -186,10 +186,11 @@ export class SpaceService {
       },
     });
 
+    // 유저는 입장 코드를 통해 공간에 참여할 수 있습니다. 이 때 권한은 사용한 코드에 따라 결정됩니다.
     if (space.adminCode === code || space.participantCode === code) {
       const spaceRole = spaceRoles.find(
         (spaceRole) =>
-          spaceRole.type === role.type || spaceRole.name === role.name,
+          spaceRole.type === role.type && spaceRole.name === role.name,
       );
 
       if (!spaceRole) {
@@ -288,6 +289,7 @@ export class SpaceService {
       where: { roleName: role },
     });
 
+    // 유저가 이미 사용 중인 역할은 삭제할 수 없습니다.
     if (isRoleInUse > 0) {
       throw new BadRequestException(
         '역할이 현재 사용 중이므로 삭제할 수 없습니다.',
@@ -303,5 +305,18 @@ export class SpaceService {
       },
       roleName: role,
     });
+  }
+
+  async getSpaceCode(spaceId: number) {
+    const space = await this.spaceRepository.findOne({
+      where: {
+        id: spaceId,
+      },
+    });
+
+    return {
+      adminCode: space.adminCode,
+      participantCode: space.participantCode,
+    };
   }
 }
