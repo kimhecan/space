@@ -167,7 +167,7 @@ export class PostService {
       throw new UnauthorizedException('게시글을 삭제할 권한이 없습니다.');
     }
 
-    await this.postRepository.delete({
+    await this.postRepository.softDelete({
       id: postId,
       space: {
         id: spaceId,
