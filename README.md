@@ -633,7 +633,9 @@ $ npm run start:prod
   ```json
   {
     "content": "댓글입니다.",
-    "anonymous": false
+    "anonymous": false,
+    // 대댓글인 경우
+    "parentId": 1
   }
   ```
 
