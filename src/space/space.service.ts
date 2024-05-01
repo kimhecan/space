@@ -84,10 +84,13 @@ export class SpaceService {
           id: userId,
         },
       },
-      relations: ['space'],
+      relations: ['space', 'space.roles'],
     });
 
-    return userSpaces.map((userSpace) => userSpace.space);
+    return userSpaces.map((userSpace) => ({
+      ...userSpace.space,
+      myRole: userSpace.roleName,
+    }));
   }
 
   async getSpaceId(id: number) {
