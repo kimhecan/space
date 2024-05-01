@@ -22,9 +22,11 @@ export class UserController {
   @Get(':id')
   @UseGuards(AccessTokenGuard)
   async getUserProfile(@User() user, @Param('id', ParseIntPipe) id: number) {
+    // 다른 유저의 프로필을 조회할 수 있습니다. 단, 다른 유저의 이메일은 조회할 수 없습니다.
     const idUser = await this.userService.findOneById(id);
     if (idUser) {
-      if (idUser.id === user.id) {
+      const isOwnId = idUser.id === user.id;
+      if (isOwnId) {
         return idUser;
       }
       const { email, ...otherDetails } = idUser;

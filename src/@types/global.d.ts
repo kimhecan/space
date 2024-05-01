@@ -8,5 +8,6 @@ declare namespace NodeJS {
     readonly NODE_ENV: 'development' | 'production';
     readonly LOGGING: boolean;
     readonly DB_HOST: string;
+    readonly SALT_ROUNDS: number;
   }
 }

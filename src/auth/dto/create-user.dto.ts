@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { Gender } from 'src/user/type';
 
 export class CreateUserDto {
@@ -15,7 +15,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   name: string;
 
-  @IsString()
+  @IsEnum(Gender)
   @IsNotEmpty()
   gender: Gender;
 

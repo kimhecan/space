@@ -25,7 +25,10 @@ export class AuthService {
       throw new BadRequestException('이미 존재하는 이메일입니다.');
     }
 
-    const hashedPassword = await bcrypt.hash(user.password, 5);
+    const hashedPassword = await bcrypt.hash(
+      user.password,
+      process.env.SALT_ROUNDS,
+    );
 
     await this.userRepository.save({
       ...user,
