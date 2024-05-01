@@ -5,16 +5,21 @@ import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { Repository } from 'typeorm';
 import { CreateChatDto } from './dto/create-chat.dto';
+import { SpaceService } from 'src/space/space.service';
+import { SpaceModel } from 'src/space/entity/space.entity';
 
 @Injectable()
 export class ChatService {
   constructor(
+    @InjectRepository(SpaceModel)
+    private spaceRepository: Repository<SpaceModel>,
     @InjectRepository(ChatModel)
     private chatRepository: Repository<ChatModel>,
     @InjectRepository(UserSpaceModel)
     private userSpaceRepository: Repository<UserSpaceModel>,
     @InjectRepository(SpaceRoleModel)
     private SpaceRoleRepository: Repository<SpaceRoleModel>,
+    private spaceService: SpaceService,
   ) {}
 
   async createChat(
@@ -49,6 +54,7 @@ export class ChatService {
   async findChatFromMe(userId: number) {
     const chats = await this.chatRepository.find({
       where: { user: { id: userId } },
+      relations: ['parent'],
     });
     return chats;
   }
@@ -77,6 +83,12 @@ export class ChatService {
 
     const isChatOwner = chat.user.id === userId;
 
+    const isSpaceOwner = this.spaceService.isSpaceOwner(
+      this.spaceRepository,
+      userId,
+      spaceId,
+    );
+
     const userSpaceRole = await this.userSpaceRepository.findOne({
       where: {
         space: {
@@ -94,7 +106,7 @@ export class ChatService {
       },
     });
 
-    const isAdminUser = spaceRole.type === 'admin';
+    const isAdminUser = spaceRole.type === 'admin' || isSpaceOwner;
 
     if (!isChatOwner && !isAdminUser) {
       throw new UnauthorizedException('댓글을 삭제할 권한이 없습니다.');

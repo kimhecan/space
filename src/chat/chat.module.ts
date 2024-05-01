@@ -10,10 +10,13 @@ import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { UserModel } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
+import { SpaceService } from 'src/space/space.service';
+import { SpaceModel } from 'src/space/entity/space.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      SpaceModel,
       PostModel,
       ChatModel,
       UserModel,
@@ -22,6 +25,6 @@ import { UserService } from 'src/user/user.service';
     ]),
   ],
   controllers: [ChatController],
-  providers: [ChatService, AuthService, JwtService, UserService],
+  providers: [SpaceService, ChatService, AuthService, JwtService, UserService],
 })
 export class ChatModule {}

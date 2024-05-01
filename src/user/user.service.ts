@@ -23,7 +23,10 @@ export class UserService {
   async update(id: number, updateUserProfileDto: UpdateUserDto) {
     const { password, name, gender, profileImage } = updateUserProfileDto;
 
-    const hashedPassword = await bcrypt.hash(password, process.env.SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      Number(process.env.SALT_ROUNDS),
+    );
 
     // 이메일을 제외한 나머지를 수정할 수 있습니다.
     await this.userRepository.update(

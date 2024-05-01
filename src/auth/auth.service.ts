@@ -27,7 +27,7 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(
       user.password,
-      process.env.SALT_ROUNDS,
+      Number(process.env.SALT_ROUNDS),
     );
 
     await this.userRepository.save({

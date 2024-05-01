@@ -12,16 +12,23 @@ import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 import { ChatModel } from 'src/chat/entity/chat.entity';
 import { ExtendedPostModel } from 'src/post/type';
+import { SpaceModel } from 'src/space/entity/space.entity';
+import { SpaceService } from 'src/space/space.service';
 
 @Injectable()
 export class PostService {
   constructor(
     @InjectRepository(PostModel)
     private postRepository: Repository<PostModel>,
+    @InjectRepository(SpaceModel)
+    private spaceRepository: Repository<SpaceModel>,
     @InjectRepository(UserSpaceModel)
     private userSpaceRepository: Repository<UserSpaceModel>,
     @InjectRepository(SpaceRoleModel)
-    private SpaceRoleRepository: Repository<SpaceRoleModel>,
+    private spaceRoleRepository: Repository<SpaceRoleModel>,
+    @InjectRepository(ChatModel)
+    private chatRepository: Repository<ChatModel>,
+    private readonly spaceService: SpaceService,
   ) {}
 
   async userExistsInSpace(spaceId: number, userId: number) {
@@ -50,7 +57,7 @@ export class PostService {
 
     const roleName = userExistsInSpace.roleName;
 
-    const role = await this.SpaceRoleRepository.findOne({
+    const role = await this.spaceRoleRepository.findOne({
       where: {
         name: roleName,
       },
@@ -135,7 +142,13 @@ export class PostService {
           id: spaceId,
         },
       },
-      relations: ['chats', 'chats.user', 'chats.replies', 'chats.replies.user'],
+      relations: [
+        'user',
+        'chats',
+        'chats.user',
+        'chats.replies',
+        'chats.replies.user',
+      ],
     });
 
     const postStats = await Promise.all(
@@ -152,6 +165,8 @@ export class PostService {
       }),
     );
 
+    console.log(postStats, 'postStats');
+
     const sortedPosts = postStats
       .sort((a, b) => {
         if (a.chatCount === b.chatCount) {
@@ -161,7 +176,11 @@ export class PostService {
       })
       .slice(0, 5);
 
+    console.log(sortedPosts, 'postStats');
+
     const popularPostsIds = new Set(sortedPosts.map((item) => item.post.id));
+
+    console.log(popularPostsIds, 'popularPostsIds');
 
     const anonymousProcessedPosts = await Promise.all(
       posts.map(async (post) => {
@@ -177,15 +196,17 @@ export class PostService {
       }),
     );
 
-    const popularProcessedPosts = anonymousProcessedPosts.map(async (post) => {
-      const newPost = { ...post } as ExtendedPostModel;
-      if (popularPostsIds.has(post.id)) {
-        newPost.isPopular = true;
-      } else {
-        newPost.isPopular = false;
-      }
-      return newPost;
-    });
+    const popularProcessedPosts = await Promise.all(
+      anonymousProcessedPosts.map(async (post) => {
+        const newPost = { ...post } as ExtendedPostModel;
+        if (popularPostsIds.has(post.id)) {
+          newPost.isPopular = true;
+        } else {
+          newPost.isPopular = false;
+        }
+        return newPost;
+      }),
+    );
 
     return popularProcessedPosts;
   }
@@ -227,24 +248,37 @@ export class PostService {
       },
     });
 
-    const spaceRole = await this.SpaceRoleRepository.findOne({
+    const isSpaceOwner = await this.spaceService.isSpaceOwner(
+      this.spaceRepository,
+      userId,
+      spaceId,
+    );
+
+    const spaceRole = await this.spaceRoleRepository.findOne({
       where: {
         name: userSpaceRole.roleName,
       },
     });
 
-    const isAdminUser = spaceRole.type === 'admin';
+    const isAdminUser = spaceRole.type === 'admin' || isSpaceOwner;
 
     if (!isPostOwner && !isAdminUser) {
       throw new UnauthorizedException('게시글을 삭제할 권한이 없습니다.');
     }
 
-    await this.postRepository.softDelete({
-      id: postId,
-      space: {
-        id: spaceId,
-      },
-    });
+    await Promise.all([
+      this.chatRepository.softDelete({
+        post: {
+          id: postId,
+        },
+      }),
+      this.postRepository.softDelete({
+        id: postId,
+        space: {
+          id: spaceId,
+        },
+      }),
+    ]);
   }
 
   async getPostOwnerAndAdminUser(
@@ -265,13 +299,19 @@ export class PostService {
       },
     });
 
-    const spaceRole = await this.SpaceRoleRepository.findOne({
+    const spaceRole = await this.spaceRoleRepository.findOne({
       where: {
         name: userSpaceRole.roleName,
       },
     });
 
-    const isAdminUser = spaceRole.type === 'admin';
+    const isSpaceOwner = await this.spaceService.isSpaceOwner(
+      this.spaceRepository,
+      userId,
+      spaceId,
+    );
+
+    const isAdminUser = spaceRole.type === 'admin' || isSpaceOwner;
 
     return {
       isPostOwner,

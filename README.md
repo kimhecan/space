@@ -95,7 +95,7 @@ $ npm run start:prod
 <br />
 <br />
 
-- **URL**: `http://{{host}}/token/access`
+- **URL**: `http://{{host}}/auth/token/access`
 - **Description**: accessToken을 재발급하는 api 입니다.(refreshToken 까지 재발급합니다.)
 - **Method**: `GET`
 - **Header**:
@@ -115,7 +115,7 @@ $ npm run start:prod
 <br>
 <br>
 
-- **URL**: `http://{{host}}/token/refresh`
+- **URL**: `http://{{host}}/auth/token/refresh`
 - **Description**: refresh 토큰을 재발급하는 api 입니다.
 - **Method**: `GET`
 - **Header**:
@@ -166,7 +166,7 @@ $ npm run start:prod
   <br>
 
 - **URL**: `http://{{host}}/user/profile`
-- **Description**: 본인의 프로필을 수정합니다. (email은 수정불가)
+- **Description**: 본인의 프로필을 수정합니다. email은 수정불가합니다(body에 넣어도 무시됨)
 - **Method**: `FETCH`
 - **Payload**:
   ```json
@@ -204,7 +204,6 @@ $ npm run start:prod
 <br>
 <br>
 
-(response 수정 필요)
 - **URL**: `http://{{host}}/chat/me`
 - **Description**: 자신이 작성한 댓글 목록을 조회합니다.
 - **Method**: `GET`
@@ -212,14 +211,27 @@ $ npm run start:prod
   ```json
   [
     {
-        "id": 1,
-        "title": "title",
-        "content": "content",
-        "type": "Question",
+        "id": 4,
+        "content": "댓글입니다.",
         "anonymous": false,
-        "attachmentUrl": "asdfasdf",
-        "createdAt": "2024-04-30T14:05:38.488Z",
-        "updatedAt": "2024-04-30T14:05:38.488Z",
+        "createdAt": "2024-05-01T12:27:14.095Z",
+        "updatedAt": "2024-05-01T12:27:14.000Z",
+        "deletedAt": null
+    },
+    {
+        "id": 5,
+        "content": "댓글입니다.2",
+        "anonymous": true,
+        "createdAt": "2024-05-01T12:30:12.338Z",
+        "updatedAt": "2024-05-01T12:30:12.000Z",
+        "deletedAt": null
+    },
+    {
+        "id": 6,
+        "content": "댓글입니다.2 의 댓글",
+        "anonymous": true,
+        "createdAt": "2024-05-01T12:32:13.655Z",
+        "updatedAt": "2024-05-01T12:32:13.655Z",
         "deletedAt": null
     }
   ]
@@ -245,26 +257,30 @@ $ npm run start:prod
 <br>
 
 - **URL**: `http://{{host}}/space`
-- **Description**: 공간을 생성합니다.
+- **Description**: 공간을 생성합니다.(생성할때 역할과 권한을 설정하고 생성자의 역할도 함께 정합니다.)
 - **Method**: `POST`
 - **Payload**:
   ```json
   [
     {
-      "name": "space1",
+      "name": "sapce1",
       "logo": "abc.png",
       "roles": [
           {
-            "name": "role-admin-1",
+            "name": "admin-1",
             "type": "admin"
           },
           {
-            "name": "role-participant-1",
+            "name": "participant-1",
+            "type": "participant"
+          },
+          {
+            "name": "participant-2",
             "type": "participant"
           }
-      ],
+        ],
       "myRole": {
-        "name": "role-admin-1",
+        "name": "admin-1",
         "type": "admin"
       }
     }
@@ -281,34 +297,42 @@ $ npm run start:prod
   ```json
   [
     {
-        "id": 10,
-        "name": "space1",
-        "logo": "abc",
-        "ownerId": 9,
-        "adminCode": "38baf5e8",
-        "participantCode": "526cadd5",
-        "createdAt": "2024-04-30T11:07:59.809Z",
-        "updatedAt": "2024-04-30T11:07:59.809Z",
+        "id": 11,
+        "name": "sapce1",
+        "logo": "abc.png",
+        "ownerId": 11,
+        "adminCode": "43f81cc7",
+        "participantCode": "b8ffa626",
+        "createdAt": "2024-05-01T11:45:44.321Z",
+        "updatedAt": "2024-05-01T11:45:44.321Z",
         "deletedAt": null,
         "roles": [
             {
-                "id": 6,
-                "name": "role-participant-1",
+                "id": 9,
+                "name": "participant-2",
                 "type": "participant",
-                "createdAt": "2024-04-30T11:15:52.268Z",
-                "updatedAt": "2024-04-30T11:15:52.306Z",
+                "createdAt": "2024-05-01T11:45:44.337Z",
+                "updatedAt": "2024-05-01T11:45:44.337Z",
                 "deletedAt": null
             },
             {
-                "id": 5,
-                "name": "role-admin-1",
+                "id": 8,
+                "name": "participant-1",
+                "type": "participant",
+                "createdAt": "2024-05-01T11:45:44.337Z",
+                "updatedAt": "2024-05-01T11:45:44.337Z",
+                "deletedAt": null
+            },
+            {
+                "id": 7,
+                "name": "admin-1",
                 "type": "admin",
-                "createdAt": "2024-04-30T11:15:52.268Z",
-                "updatedAt": "2024-04-30T11:15:52.306Z",
+                "createdAt": "2024-05-01T11:45:44.332Z",
+                "updatedAt": "2024-05-01T11:45:44.332Z",
                 "deletedAt": null
             }
         ],
-        "myRole": "role-admin-1"
+        "myRole": "admin-1"
     }
   ]
   ```
@@ -317,17 +341,32 @@ $ npm run start:prod
 <br>
 
 - **URL**: `http://{{host}}/space/:spaceId/join`
-- **Description**: 다른 공간에 참여하는 api 입니다.
+- **Description**: 공간의 관리자, 참여자 코드를 반환합니다. (소유자만 가능)
+- **Method**: `GET`
+- **Payload**:
+  ```json
+  {
+    "adminCode": "43f81cc7",
+    "participantCode": "b8ffa626"
+  }
+  ```
+
+<br>
+<br>
+
+
+- **URL**: `http://{{host}}/space/:spaceId/join`
+- **Description**: 다른 공간에 참여하는 api 입니다. (참여코드와 권한이 일치해야함)
 - **Method**: `POST`
 - **Payload**:
   ```json
-    {
-      "code": "526cadd5",
-      "role": {
-        "name": "role-participant-1",
+  {
+    "code": "b8ffa626",
+    "role": {
+        "name": "participant-1",
         "type": "participant"
-      }
     }
+  }
   ```
 
 <br>
@@ -345,9 +384,9 @@ $ npm run start:prod
 - **Method**: `FETCH`
 - **Payload**:
   ```json
-    {
-      "role": "role-admin-1"
-    }
+  {
+    "role": "participant-2"
+  }
   ```
 
 <br>
@@ -375,7 +414,7 @@ $ npm run start:prod
 - **Payload**:
   ```json
     {
-      "role": "role-admin-1"
+      "role": "admin-1"
     }
   ```
 
@@ -408,30 +447,145 @@ $ npm run start:prod
   ```json
   [
     {
-        "id": 1,
-        "title": "title",
-        "content": "content",
+        "id": 4,
+        "title": "질문있어요",
+        "content": "내용입니.",
         "type": "Question",
-        "anonymous": false,
-        "attachmentUrl": "asdfasdf",
-        "createdAt": "2024-04-30T14:05:38.488Z",
-        "updatedAt": "2024-04-30T14:05:38.488Z",
+        "anonymous": true,
+        "attachmentUrl": "asdfasdf.png",
+        "createdAt": "2024-05-01T12:07:48.878Z",
+        "updatedAt": "2024-05-01T12:07:48.878Z",
         "deletedAt": null,
-        "chats": []
+        // 익명게시글인 경우 && (관리자 또는 본인이 아닌 경우)
+        "user": null,
+        "chats": [],
+        "isPopular": true
     },
     {
-        "id": 2,
-        "title": "title",
-        "content": "content",
+        "id": 5,
+        "title": "질문있어요2",
+        "content": "내용입니다.2",
         "type": "Question",
         "anonymous": false,
-        "attachmentUrl": "asdfasdf",
-        "createdAt": "2024-05-01T04:54:26.079Z",
-        "updatedAt": "2024-05-01T04:54:26.079Z",
+        "attachmentUrl": "asdfasdf.png",
+        "createdAt": "2024-05-01T12:08:58.421Z",
+        "updatedAt": "2024-05-01T12:08:58.421Z",
         "deletedAt": null,
-        "chats": []
-    },
+        "user": {
+            "id": 13,
+            "email": "kimhecan123@gmail.com",
+            "name": "김희찬123",
+            "gender": "Male",
+            "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+            "createdAt": "2024-05-01T11:44:17.013Z",
+            "updatedAt": "2024-05-01T11:44:17.013Z",
+            "deletedAt": null
+        },
+        "chats": [],
+        "isPopular": true
+    }
   ]
+  ```
+
+<br>
+<br>
+
+- **URL**: `http://{{host}}/post/:postId?spaceId=:spaceId`
+- **Description**: 특정 공간에 있는 특정 게시글을 조회합니다.
+- **Method**: `GET`
+- **Payload**:
+  ```json
+  {
+    "id": 4,
+    "title": "질문있어요",
+    "content": "내용입니.",
+    "type": "Question",
+    "anonymous": true,
+    "attachmentUrl": "asdfasdf.png",
+    "createdAt": "2024-05-01T12:07:48.878Z",
+    "updatedAt": "2024-05-01T12:07:48.878Z",
+    "deletedAt": null,
+    // 익명게시글인 경우 && (관리자 또는 본인이 아닌 경우)
+    "user": null,
+    "chats": [
+        {
+            "id": 4,
+            "content": "댓글입니다.",
+            "anonymous": false,
+            "createdAt": "2024-05-01T12:27:14.095Z",
+            "updatedAt": "2024-05-01T12:27:14.000Z",
+            "deletedAt": null,
+            "user": {
+                "id": 12,
+                "email": "kimhecan12@gmail.com",
+                "name": "김희찬12",
+                "gender": "Male",
+                "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+                "createdAt": "2024-05-01T11:32:00.602Z",
+                "updatedAt": "2024-05-01T11:32:00.602Z",
+                "deletedAt": null
+            },
+            "replies": [
+                {
+                    "id": 6,
+                    "content": "댓글입니다.2 의 댓글",
+                    "anonymous": true,
+                    "createdAt": "2024-05-01T12:32:13.655Z",
+                    "updatedAt": "2024-05-01T12:32:13.655Z",
+                    "deletedAt": null,
+                    "user": {
+                        "id": 12,
+                        "email": "kimhecan12@gmail.com",
+                        "name": "김희찬12",
+                        "gender": "Male",
+                        "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+                        "createdAt": "2024-05-01T11:32:00.602Z",
+                        "updatedAt": "2024-05-01T11:32:00.602Z",
+                        "deletedAt": null
+                    }
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "content": "댓글입니다.2",
+            "anonymous": true,
+            "createdAt": "2024-05-01T12:30:12.338Z",
+            "updatedAt": "2024-05-01T12:30:12.000Z",
+            "deletedAt": null,
+            "user": {
+                "id": 12,
+                "email": "kimhecan12@gmail.com",
+                "name": "김희찬12",
+                "gender": "Male",
+                "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+                "createdAt": "2024-05-01T11:32:00.602Z",
+                "updatedAt": "2024-05-01T11:32:00.602Z",
+                "deletedAt": null
+            },
+            "replies": []
+        },
+        {
+            "id": 6,
+            "content": "댓글입니다.2 의 댓글",
+            "anonymous": true,
+            "createdAt": "2024-05-01T12:32:13.655Z",
+            "updatedAt": "2024-05-01T12:32:13.655Z",
+            "deletedAt": null,
+            "user": {
+                "id": 12,
+                "email": "kimhecan12@gmail.com",
+                "name": "김희찬12",
+                "gender": "Male",
+                "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+                "createdAt": "2024-05-01T11:32:00.602Z",
+                "updatedAt": "2024-05-01T11:32:00.602Z",
+                "deletedAt": null
+            },
+            "replies": []
+        }
+    ]
+  }
   ```
 
 <br>
@@ -442,15 +596,13 @@ $ npm run start:prod
 - **Method**: `POST`
 - **Payload**:
   ```json
-  [
-    {
-      "title": "title",
-      "content": "content",
-      "type": "Question",
-      "anonymous": false,
-      "attachmentUrl": "asdfasdf.png"
-    }
-  ]
+  {
+    "title": "질문있어요",
+    "content": "내용입니다.",
+    "type": "Question",
+    "anonymous": true,
+    "attachmentUrl": "asdfasdf.png"
+  }
   ```
 
 <br>
@@ -472,3 +624,23 @@ $ npm run start:prod
 5. 댓글 또한 익명 상태로 작성하는 것이 가능합니다.
     1. 익명 댓글에 대한 제약사항은 기본적으로 익명 게시글의 제약사항과 동일합니다.
 
+
+
+- **URL**: `http://{{host}}/chat?postId=:postId`
+- **Description**: 특정 게시글에 댓글을 작성합니다.
+- **Method**: `POST`
+- **Payload**:
+  ```json
+  {
+    "content": "댓글입니다.",
+    "anonymous": false
+  }
+  ```
+
+<br>
+<br>
+
+
+- **URL**: `http://{{host}}/chat/:chatId?spaceId=:spaceId&postId=:postId`
+- **Description**: 특정 댓글을 삭제합니다.
+- **Method**: `DELETE`

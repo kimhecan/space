@@ -40,16 +40,6 @@ export class ChatController {
     return this.chatService.findChatFromMe(user.id);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.chatService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateChatDto: UpdateChatDto) {
-  //   return this.chatService.update(+id, updateChatDto);
-  // }
-
   @Delete(':id')
   remove(
     @User() user,

@@ -186,19 +186,22 @@ export class SpaceService {
       },
     });
 
-    // 유저는 입장 코드를 통해 공간에 참여할 수 있습니다. 이 때 권한은 사용한 코드에 따라 결정됩니다.
-    if (space.adminCode === code || space.participantCode === code) {
-      const spaceRole = spaceRoles.find(
-        (spaceRole) =>
-          spaceRole.type === role.type && spaceRole.name === role.name,
+    const spaceRole = spaceRoles.find(
+      (spaceRole) =>
+        spaceRole.type === role.type && spaceRole.name === role.name,
+    );
+
+    if (!spaceRole) {
+      throw new NotFoundException(
+        '코드에 맞는 공간의 역할을 찾을 수 없습니다.',
       );
+    }
 
-      if (!spaceRole) {
-        throw new NotFoundException(
-          '코드에 맞는 공간의 역할을 찾을 수 없습니다.',
-        );
-      }
-
+    // 유저는 입장 코드를 통해 공간에 참여할 수 있습니다. 이 때 권한은 사용한 코드에 따라 결정됩니다.
+    if (
+      (space.adminCode === code && spaceRole.type === 'admin') ||
+      (space.participantCode === code && spaceRole.type === 'participant')
+    ) {
       const userSpace = {
         user: {
           id: user.id,
@@ -262,6 +265,20 @@ export class SpaceService {
     spaceId: number;
     newRole: string;
   }) {
+    // 그 공간에 존재하는 역할인지 확인
+    const isRoleExist = await this.spaceRoleRepository.exists({
+      where: {
+        space: {
+          id: spaceId,
+        },
+        name: newRole,
+      },
+    });
+
+    if (!isRoleExist) {
+      throw new NotFoundException('해당 역할을 공간에서 찾을 수 없습니다.');
+    }
+
     await this.userSpaceRepository.update(
       {
         user: {
@@ -318,5 +335,23 @@ export class SpaceService {
       adminCode: space.adminCode,
       participantCode: space.participantCode,
     };
+  }
+
+  async isSpaceOwner(
+    spaceRepository: Repository<SpaceModel>,
+    userId: number,
+    spaceId: number,
+  ) {
+    const space = await spaceRepository.findOne({
+      where: {
+        id: spaceId,
+      },
+    });
+
+    if (!space) {
+      throw new NotFoundException('공간을 찾을 수 없습니다.');
+    }
+
+    return space.ownerId === userId;
   }
 }
