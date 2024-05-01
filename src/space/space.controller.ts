@@ -68,8 +68,7 @@ export class SpaceController {
       spaceId: spaceId,
     });
 
-    // TODO: HTTP 메소드로 변경
-    return { message: 'New owner appointed successfully.' };
+    return { message: '성공적으로 새로운 소유자를 임명했습니다.' };
   }
 
   @Post(':spaceId/join')

@@ -9,6 +9,8 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserModel } from 'src/user/entity/user.entity';
 import { UserService } from 'src/user/user.service';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
+import { PostModel } from 'src/post/entity/post.entity';
+import { ChatModel } from 'src/chat/entity/chat.entity';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { UserSpaceModel } from 'src/user/entity/user-space.entity';
       SpaceRoleModel,
       UserModel,
       UserSpaceModel,
+      PostModel,
+      ChatModel,
     ]),
   ],
   controllers: [SpaceController],

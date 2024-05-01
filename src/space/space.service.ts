@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { generateUniqueString } from 'src/@shared/utils/generate-unique-string';
+import { ChatModel } from 'src/chat/entity/chat.entity';
+import { PostModel } from 'src/post/entity/post.entity';
 import { CreateSpaceDto } from 'src/space/dto/create-space.dto';
 import { CreateSpaceRoleDto } from 'src/space/dto/space-role-dto';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
@@ -23,6 +25,10 @@ export class SpaceService {
     private spaceRepository: Repository<SpaceModel>,
     @InjectRepository(SpaceRoleModel)
     private spaceRoleRepository: Repository<SpaceRoleModel>,
+    @InjectRepository(PostModel)
+    private postRepository: Repository<PostModel>,
+    @InjectRepository(ChatModel)
+    private chatRepository: Repository<ChatModel>,
   ) {}
 
   async create({
@@ -37,6 +43,7 @@ export class SpaceService {
     const spaceDto = {
       name: createSpace.name,
       logo: createSpace.logo,
+      // 공간을 개설할 경우, 유저는 소유자로 공간에 참여합니다.
       ownerId: user.id,
       adminCode: generateUniqueString(8),
       participantCode: generateUniqueString(8),
@@ -214,7 +221,35 @@ export class SpaceService {
       throw new ForbiddenException('공간 소유자만 삭제할 수 있습니다.');
     }
 
-    await this.spaceRepository.softDelete({ id: spaceId });
+    // 공간삭제시 관련된 데이터 모두 softDelete
+    await Promise.all([
+      this.userSpaceRepository.softDelete({
+        space: {
+          id: spaceId,
+        },
+      }),
+      this.spaceRoleRepository.softDelete({
+        space: {
+          id: spaceId,
+        },
+      }),
+      this.postRepository.softDelete({
+        space: {
+          id: spaceId,
+        },
+      }),
+      this.chatRepository
+        .createQueryBuilder('chat')
+        .innerJoin('chat.post', 'post')
+        .innerJoin('post.space', 'space', 'space.id = :spaceId', { spaceId })
+        .softDelete()
+        .execute(),
+      this.spaceRepository.softDelete({ id: spaceId }),
+    ]);
+
+    return {
+      message: '정상적으로 삭제되었습니다.',
+    };
   }
 
   async changeUserRole({
