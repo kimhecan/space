@@ -1,3 +1,8 @@
+## ERD
+
+![이미지](https://github.com/kimhecan/space/assets/39295881/a014bc22-8392-4173-9f17-93d6597e311c)
+
+
 ## 환경설정
 -  .env.development, .env.production DB고나련 환경변수를 로컬에 맞게 설정해주세요
 
@@ -646,3 +651,37 @@ $ npm run start:prod
 - **URL**: `http://{{host}}/chat/:chatId?spaceId=:spaceId&postId=:postId`
 - **Description**: 특정 댓글을 삭제합니다.
 - **Method**: `DELETE`
+
+
+<br>
+<br>
+
+### 신규 기능, 인터랙션
+
+클라썸은 유저들의 소통을 촉진하기 위해 게시글과 댓글에 인터랙션을 할 수 있도록 하고자 합니다.
+
+1. 게시글에 유저들이 “저도 궁금해요”를 누를 수 있습니다.
+2. 댓글에 유저들이 “좋아요”를 누를 수 있습니다.
+3. 본인의 게시글과 댓글에 저도 궁금해요와 좋아요를 누를 수 있습니다.
+4. 누른 인터랙션을 취소할수도 있습니다.
+5. 인터랙션들에 대해 유저에게 다음의 통계를 제공합니다.
+    - 공간 내에서 본인이 평균 대비 얼마나 인터랙션을 보냈는가 / 받았는가
+    - 공간 내에서 본인이 속한 역할에 대해 본인이 평균 대비 얼마나 인터랙션을 보냈는가 / 받았는가
+    - 공간 내에서 역할 별로 얼마나 인터랙션을 보냈는가 / 받았는가
+6. 인기글의 조건에 게시글이 받은 “저도 궁금해요” 수도 포함합니다.
+
+<br>
+<br>
+
+- **URL**: `http://{{host}}/interaction/curious/:postId`
+- **Description**: 게시글에 "저도 궁금해요"를 누루면 보내지는 api입니다. (이미 해당글에 누른상태에서 누루면 softDelete 됩니다.)
+- **Method**: `POST`
+
+<br>
+<br>
+
+- **URL**: `http://{{host}}/interaction/like/:chatId`
+- **Description**: 댓글에 "좋아요"를 누루면 보내지는 api입니다. (이미 해당글에 누른상태에서 누루면 softDelete 됩니다.)
+- **Method**: `POST`
+
+
