@@ -22,11 +22,11 @@ export class UserModel {
   @Column('varchar', { unique: true, length: 30 })
   email: string;
 
-  @Column('varchar', { unique: true, length: 60, select: false })
+  @Column('varchar', { length: 30, select: false })
   @Exclude()
   password: string;
 
-  @Column('varchar', { length: 50 })
+  @Column('varchar', { length: 10 })
   name: string;
 
   @Column({

@@ -22,10 +22,6 @@ export class SpaceRoleModel {
   @Column()
   type: 'admin' | 'participant';
 
-  @ManyToOne(() => SpaceModel, (space) => space.roles)
-  @JoinColumn({ name: 'spaceId', referencedColumnName: 'id' })
-  space: SpaceModel;
-
   @CreateDateColumn()
   @Exclude()
   createdAt: Date;
@@ -37,4 +33,8 @@ export class SpaceRoleModel {
   @DeleteDateColumn()
   @Exclude()
   deletedAt: Date | null;
+
+  @ManyToOne(() => SpaceModel, (space) => space.roles)
+  @JoinColumn({ name: 'spaceId', referencedColumnName: 'id' })
+  space: SpaceModel;
 }
