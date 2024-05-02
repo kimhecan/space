@@ -165,8 +165,6 @@ export class PostService {
       }),
     );
 
-    console.log(postStats, 'postStats');
-
     const sortedPosts = postStats
       .sort((a, b) => {
         if (a.chatCount === b.chatCount) {
@@ -176,11 +174,7 @@ export class PostService {
       })
       .slice(0, 5);
 
-    console.log(sortedPosts, 'postStats');
-
     const popularPostsIds = new Set(sortedPosts.map((item) => item.post.id));
-
-    console.log(popularPostsIds, 'popularPostsIds');
 
     const anonymousProcessedPosts = await Promise.all(
       posts.map(async (post) => {

@@ -1,5 +1,6 @@
 import { Exclude } from 'class-transformer';
 import { PostModel } from 'src/post/entity/post.entity';
+import { InteractionModel } from 'src/interaction/entity/interaction.entity';
 import { UserModel } from 'src/user/entity/user.entity';
 import {
   Column,
@@ -50,4 +51,7 @@ export class ChatModel {
 
   @OneToMany(() => ChatModel, (chat) => chat.parent)
   replies: ChatModel[];
+
+  @OneToMany(() => InteractionModel, (interaction) => interaction.chat)
+  interactions: InteractionModel[];
 }

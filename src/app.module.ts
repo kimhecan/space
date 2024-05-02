@@ -1,23 +1,25 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { LoggerMiddleware } from 'src/@shared/middlewares/logger.middleware';
+import { ChatModel } from 'src/chat/entity/chat.entity';
+import { PUBLIC_FOLDER_PATH } from 'src/common/constant/path';
+import { InteractionModel } from 'src/interaction/entity/interaction.entity';
+import { PostModel } from 'src/post/entity/post.entity';
+import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
+import { SpaceModel } from 'src/space/entity/space.entity';
+import { UserSpaceModel } from 'src/user/entity/user-space.entity';
+import { UserModel } from 'src/user/entity/user.entity';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoggerMiddleware } from 'src/@shared/middlewares/logger.middleware';
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { CommonModule } from './common/common.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { PUBLIC_FOLDER_PATH } from 'src/common/constant/path';
-import { UserModel } from 'src/user/entity/user.entity';
-import { SpaceModule } from './space/space.module';
-import { UserSpaceModel } from 'src/user/entity/user-space.entity';
-import { SpaceModel } from 'src/space/entity/space.entity';
-import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
-import { PostModule } from './post/post.module';
 import { ChatModule } from './chat/chat.module';
-import { PostModel } from 'src/post/entity/post.entity';
-import { ChatModel } from 'src/chat/entity/chat.entity';
+import { CommonModule } from './common/common.module';
+import { InteractionModule } from './interaction/interaction.module';
+import { PostModule } from './post/post.module';
+import { SpaceModule } from './space/space.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import { ChatModel } from 'src/chat/entity/chat.entity';
         SpaceRoleModel,
         PostModel,
         ChatModel,
+        InteractionModel,
       ],
       synchronize: true,
     }),
@@ -52,6 +55,7 @@ import { ChatModel } from 'src/chat/entity/chat.entity';
     SpaceModule,
     PostModule,
     ChatModule,
+    InteractionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

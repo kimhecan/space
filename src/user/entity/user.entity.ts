@@ -3,6 +3,7 @@ import { join } from 'path';
 import { ChatModel } from 'src/chat/entity/chat.entity';
 import { USER_PUBLIC_IMAGE_PATH } from 'src/common/constant/path';
 import { PostModel } from 'src/post/entity/post.entity';
+import { InteractionModel } from 'src/interaction/entity/interaction.entity';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { Gender } from 'src/user/type';
 import {
@@ -22,7 +23,7 @@ export class UserModel {
   @Column('varchar', { unique: true, length: 30 })
   email: string;
 
-  @Column('varchar', { length: 30, select: false })
+  @Column('varchar', { length: 60, select: false })
   @Exclude()
   password: string;
 
@@ -61,4 +62,7 @@ export class UserModel {
 
   @OneToMany(() => ChatModel, (chat) => chat.user)
   chats: ChatModel[];
+
+  @OneToMany(() => InteractionModel, (interaction) => interaction.user)
+  interactions: InteractionModel[];
 }

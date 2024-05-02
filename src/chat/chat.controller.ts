@@ -41,6 +41,7 @@ export class ChatController {
   }
 
   @Delete(':id')
+  @UseGuards(AccessTokenGuard)
   remove(
     @User() user,
     @Query('spaceId', ParseIntPipe) spaceId: number,

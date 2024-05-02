@@ -1,6 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { ChatModel } from 'src/chat/entity/chat.entity';
 import { PostType } from 'src/post/type';
+import { InteractionModel } from 'src/interaction/entity/interaction.entity';
 import { SpaceModel } from 'src/space/entity/space.entity';
 import { UserModel } from 'src/user/entity/user.entity';
 import {
@@ -62,4 +63,7 @@ export class PostModel {
 
   @OneToMany(() => ChatModel, (chat) => chat.post)
   chats: ChatModel[];
+
+  @OneToMany(() => InteractionModel, (interaction) => interaction.post)
+  interactions: InteractionModel[];
 }
