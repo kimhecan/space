@@ -4,6 +4,8 @@ import { ChatModel } from 'src/chat/entity/chat.entity';
 import { InteractionModel } from 'src/interaction/entity/interaction.entity';
 import { PostModel } from 'src/post/entity/post.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
+import { UserSpaceModel } from 'src/user/entity/user-space.entity';
+import { UserModel } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -17,9 +19,13 @@ export class InteractionService {
     private chatRepository: Repository<ChatModel>,
     @InjectRepository(SpaceRoleModel)
     private spaceRoleRepository: Repository<SpaceRoleModel>,
+    @InjectRepository(UserSpaceModel)
+    private userSpaceRepository: Repository<UserSpaceModel>,
+    @InjectRepository(UserModel)
+    private userRepository: Repository<UserModel>,
   ) {}
 
-  async postCurious(postId: number, userId) {
+  async postCurious(postId: number, userId: number, spaceId: number) {
     const isExistInteraction = await this.interactionRepository.exists({
       where: {
         post: {
@@ -27,6 +33,9 @@ export class InteractionService {
         },
         user: {
           id: userId,
+        },
+        space: {
+          id: spaceId,
         },
       },
     });
@@ -38,6 +47,9 @@ export class InteractionService {
         },
         user: {
           id: userId,
+        },
+        space: {
+          id: spaceId,
         },
       });
 
@@ -51,6 +63,9 @@ export class InteractionService {
         },
         user: {
           id: userId,
+        },
+        space: {
+          id: spaceId,
         },
       });
 
@@ -60,7 +75,7 @@ export class InteractionService {
     }
   }
 
-  async chatLike(chatId: number, userId: number) {
+  async chatLike(chatId: number, userId: number, spaceId: number) {
     const isExistInteraction = await this.interactionRepository.exists({
       where: {
         chat: {
@@ -68,6 +83,9 @@ export class InteractionService {
         },
         user: {
           id: userId,
+        },
+        space: {
+          id: spaceId,
         },
       },
     });
@@ -79,6 +97,9 @@ export class InteractionService {
         },
         user: {
           id: userId,
+        },
+        space: {
+          id: spaceId,
         },
       });
 
@@ -92,6 +113,9 @@ export class InteractionService {
         },
         user: {
           id: userId,
+        },
+        space: {
+          id: spaceId,
         },
       });
 
@@ -102,128 +126,134 @@ export class InteractionService {
   }
 
   async getStatistic(spaceId: number, userId: number) {
-    // 각 사용자가 보낸 "저도 궁금해요" 정보
-    const sentCuriousCountGroupByUser = await this.interactionRepository
-      .createQueryBuilder('interaction')
-      .select('interaction.userId', 'userId')
-      .addSelect('COUNT(interaction.id)', 'sentCuriousCount')
-      .leftJoin('interaction.post', 'post')
-      .where('post.spaceId = :spaceId', {
-        spaceId,
-      })
-      .groupBy('interaction.userId')
-      .getRawMany();
+    const [userSpaces, interactions, spaceRoles, posts] = await Promise.all([
+      this.userSpaceRepository.find({
+        where: {
+          space: {
+            id: spaceId,
+          },
+        },
+        relations: ['user'],
+      }),
+      this.interactionRepository.find({
+        where: {
+          space: {
+            id: spaceId,
+          },
+        },
+        relations: ['user', 'user.userSpace'],
+      }),
+      this.spaceRoleRepository.find({
+        where: {
+          space: {
+            id: spaceId,
+          },
+        },
+      }),
+      this.postRepository.find({
+        where: {
+          space: {
+            id: spaceId,
+          },
+        },
+        relations: [
+          'interactions',
+          'user',
+          'chats',
+          'chats.user',
+          'chats.interactions',
+        ],
+      }),
+    ]);
 
-    // 각 사용자가 보낸 "저도 궁금해요" 수의 평균
-    const averageSentCuriosCountPerUser = this.calculateAverage(
-      sentCuriousCountGroupByUser,
-      'sentCuriousCount',
+    const userRole = userSpaces.find((us) => us.user.id === userId).roleName;
+
+    /**
+     * 공간에서 일어난 평균 인터렉션 수
+     */
+    const averageInteractionPerUser = Math.round(
+      interactions.length / userSpaces.length,
     );
 
-    // 본인이 보낸 "저도 궁금해요" 수 (없으면 0)
-    const userSentCuriousCount = this.findUserInteractionCount(
-      sentCuriousCountGroupByUser,
-      userId,
-      'sentCuriousCount',
-    );
+    /**
+     * 본인이 보낸 인터렉션 수
+     */
+    const userSentInteractionCount = interactions.filter(
+      (interaction) => interaction.user.id === userId,
+    ).length;
 
-    // 각 사용자가 받은 "저도 궁금해요" 정보
-    const receivedCuriousCountPerUser = await this.postRepository
-      .createQueryBuilder('post')
-      .select('post.userId', 'userId')
-      .addSelect('COUNT(interaction.id)', 'receivedCuriousCount')
-      .leftJoin('post.interactions', 'interaction')
-      .where('post.spaceId = :spaceId', { spaceId })
-      .groupBy('post.userId')
-      .getRawMany();
+    /**
+     * 본인이 받은 인터렉션 수
+     */
+    const userReceivedInteractionCount = posts
+      .filter((post) => post.user.id === userId)
+      .reduce((totalInteractions, post) => {
+        // 게시글에서 받은 인터렉션 수
+        totalInteractions += post.interactions.length;
 
-    // 각 사용자가 보낸 "저도 궁금해요" 수의 평균
-    const averageReceivedCuriousCountPerUser = this.calculateAverage(
-      receivedCuriousCountPerUser,
-      'receivedCuriousCount',
-    );
+        // 댓글에서 받은 인터렉션 수
+        totalInteractions += post.chats.reduce(
+          (totalLikes, chat) => totalLikes + chat.interactions.length,
+          0,
+        );
 
-    // 본인이 보낸 "저도 궁금해요" 수 (없으면 0)
-    const userReceivedCuriousCount = this.findUserInteractionCount(
-      receivedCuriousCountPerUser,
-      userId,
-      'receivedCuriousCount',
-    );
+        return totalInteractions;
+      }, 0);
 
-    // 각 사용자가 보낸 "좋아요" 정보
-    const sentLikeCountGroupByUser = await this.interactionRepository
-      .createQueryBuilder('interaction')
-      .select('interaction.userId', 'userId')
-      .addSelect('COUNT(interaction.id)', 'sentLikeCount')
-      .innerJoin('interaction.chat', 'chat')
-      .innerJoin('chat.post', 'relatedPost')
-      .where('relatedPost.spaceId = :spaceId', { spaceId })
-      .groupBy('interaction.userId')
-      .getRawMany();
+    /**
+     * 역할별로 보낸 인터렉션 수와 받은 인터렉션 수 계산
+     */
+    const rolesInteractions = spaceRoles.map((role) => {
+      const RoleName = role.name;
 
-    // 각 사용자가 보낸 "좋아요" 수의 평균
-    const averageSentLikeCountPerUser = this.calculateAverage(
-      sentLikeCountGroupByUser,
-      'sentLikeCount',
-    );
+      // 인터렉션중 해당 인터렉션의 유저가 해당 역할을 가지고 있는지 확인
+      const interactionsOfRole = interactions.filter((interaction) => {
+        return interaction.user.userSpace.find(
+          (us) => us.roleName === RoleName,
+        );
+      });
 
-    // 본인이 보낸 "좋아요" 수 (없으면 0)
-    const userSentLikeCount = this.findUserInteractionCount(
-      sentLikeCountGroupByUser,
-      userId,
-      'sentLikeCount',
-    );
+      // 우선 보낸 인터렉션 먼저 계산
+      return {
+        role: role.name,
+        interaction: {
+          send: interactionsOfRole.length,
+          receive: 0,
+        },
+      };
+    });
 
-    // 각 사용자가 받은 "좋아요" 정보
-    const receivedLikeCountGroupByUser = await this.chatRepository
-      .createQueryBuilder('chat')
-      .select('post.userId', 'userId') // 게시글 작성자 ID를 사용
-      .addSelect('COUNT(interaction.id)', 'receivedLikeCount')
-      .leftJoin('chat.interactions', 'interaction') // 채팅과 연관된 인터랙션
-      .leftJoin('chat.post', 'post') // 채팅이 속한 게시물
-      .where('post.spaceId = :spaceId', { spaceId }) // 게시물의 공간 ID로 필터링
-      .groupBy('post.userId') // 게시물 작성자 별로 그룹화
-      .getRawMany();
+    // 역할별로 받은 인터렉션 계산
+    posts.forEach((post) => {
+      const postUserRoleName = userSpaces.find(
+        (us) => us.user.id === post.user.id,
+      ).roleName;
 
-    // 각 사용자가 받은 "좋아요" 수의 평균
-    const averageReceivedLikeCountPerUser = this.calculateAverage(
-      receivedLikeCountGroupByUser,
-      'receivedLikeCount',
-    );
+      rolesInteractions.forEach((role) => {
+        if (role.role === postUserRoleName) {
+          role.interaction.receive += post.interactions.length;
+        }
+      });
 
-    // 본인이 받은 "좋아요" 수 (없으면 0)
-    const userReceivedLikeCountLikeCount = this.findUserInteractionCount(
-      receivedLikeCountGroupByUser,
-      userId,
-      'receivedLikeCount',
-    );
+      post.chats.forEach((chat) => {
+        const chatUserRoleName = userSpaces.find(
+          (us) => us.user.id === chat.user.id,
+        ).roleName;
+
+        rolesInteractions.forEach((role) => {
+          if (role.role === chatUserRoleName) {
+            role.interaction.receive += chat.interactions.length;
+          }
+        });
+      });
+    });
 
     return {
-      averageSentCuriosCountPerUser,
-      userSentCuriousCount,
-      averageReceivedCuriousCountPerUser,
-      userReceivedCuriousCount,
-      averageSentLikeCountPerUser,
-      userSentLikeCount,
-      averageReceivedLikeCountPerUser,
-      userReceivedLikeCountLikeCount,
+      rolesInteractions,
+      userRole: userRole,
+      userSentInteractionCount,
+      userReceivedInteractionCount,
+      averageInteractionPerUser,
     };
-  }
-
-  private calculateAverage(dataArray: any[], countField: string): number {
-    const total = dataArray.reduce(
-      (acc, cur) => acc + Number(cur[countField]),
-      0,
-    );
-    return dataArray.length > 0 ? Math.round(total / dataArray.length) : 0;
-  }
-
-  private findUserInteractionCount(
-    dataArray: any[],
-    userId: number,
-    countField: string,
-  ): number {
-    const userInfo = dataArray.find((value) => value.userId === userId);
-    return Number(userInfo?.[countField] || 0);
   }
 }

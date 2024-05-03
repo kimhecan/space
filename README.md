@@ -1,6 +1,6 @@
 ## ERD
 
-![이미지](https://github.com/kimhecan/space/assets/39295881/a014bc22-8392-4173-9f17-93d6597e311c)
+![스크린샷 2024-05-03 오전 12 38 22](https://github.com/kimhecan/space/assets/39295881/e4ae7c48-8b21-432c-a923-30a998bc5fab)
 
 
 ## 환경설정
@@ -673,15 +673,62 @@ $ npm run start:prod
 <br>
 <br>
 
-- **URL**: `http://{{host}}/interaction/curious/:postId`
+- **URL**: `http://{{host}}/interaction/curious/:postId?spaceId=:spaceId`
 - **Description**: 게시글에 "저도 궁금해요"를 누루면 보내지는 api입니다. (이미 해당글에 누른상태에서 누루면 softDelete 됩니다.)
 - **Method**: `POST`
 
 <br>
 <br>
 
-- **URL**: `http://{{host}}/interaction/like/:chatId`
+- **URL**: `http://{{host}}/interaction/like/:chatId?spaceId=:spaceId`
 - **Description**: 댓글에 "좋아요"를 누루면 보내지는 api입니다. (이미 해당글에 누른상태에서 누루면 softDelete 됩니다.)
 - **Method**: `POST`
 
+
+<br>
+<br>
+
+- **URL**: `http://{{host}}/interaction/statistic?spaceId=:spaceId`
+- **Description**: 인터랙션들에 대한 통계정보입니다.
+    - 공간 내에서 본인이 평균 대비 얼마나 인터랙션을 보냈는가 / 받았는가
+      - `averageInteractionPerUser`는 공간내에서 일어난 평균 인터랙션 수입니다. (보낸 평균과 받은 평균은 같음)
+      - `userSentInteractionCount`는 유저가 보낸 인터랙션 수 입니다.
+      - `userReceivedInteractionCount`는 유저가 받은 인터랙션 수 입니다.
+    - 공간 내에서 본인이 속한 역할에 대해 본인이 평균 대비 얼마나 인터랙션을 보냈는가 / 받았는가
+      -  `rolesInteractions`에서 본인이 속한 역할의 인터렉션과 `userSentInteractionCount`, `userReceivedInteractionCount`를 비교하면 됩니다.
+    - 공간 내에서 역할 별로 얼마나 인터랙션을 보냈는가 / 받았는가
+      - `rolesInteractions`를 전체 돌면 됩니다.
+- **Method**: `GET`
+- **Response**:
+  ```json
+    {
+      "rolesInteractions": [
+          {
+            "role": "admin-1",
+            "interaction": {
+                "send": 6,
+                "receive": 1
+            }
+          },
+          {
+            "role": "participant-1",
+            "interaction": {
+                "send": 2,
+                "receive": 7
+            }
+          },
+          {
+            "role": "participant-2",
+            "interaction": {
+                "send": 0,
+                "receive": 0
+            }
+          }
+      ],
+      "userRole": "participant-1",
+      "userSentInteractionCount": 2,
+      "userReceivedInteractionCount": 7,
+      "averageInteractionPerUser": 3
+    }
+  ```
 

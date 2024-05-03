@@ -21,17 +21,19 @@ export class InteractionController {
   async postCurious(
     @User() user: UserModel,
     @Param('postId', ParseIntPipe) postId: number,
+    @Query('spaceId', ParseIntPipe) spaceId: number,
   ) {
-    return await this.interactionService.postCurious(postId, user.id);
+    return await this.interactionService.postCurious(postId, user.id, spaceId);
   }
 
-  @Post('like/:chatId')
+  @Post('like/:chatId?spaceId=:spaceId')
   @UseGuards(AccessTokenGuard)
   async chatLike(
     @User() user: UserModel,
     @Param('chatId', ParseIntPipe) chatId: number,
+    @Query('spaceId', ParseIntPipe) spaceId: number,
   ) {
-    return await this.interactionService.chatLike(chatId, user.id);
+    return await this.interactionService.chatLike(chatId, user.id, spaceId);
   }
 
   @Get('statistic')

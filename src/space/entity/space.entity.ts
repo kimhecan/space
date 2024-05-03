@@ -1,4 +1,5 @@
 import { Exclude } from 'class-transformer';
+import { InteractionModel } from 'src/interaction/entity/interaction.entity';
 import { PostModel } from 'src/post/entity/post.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 import { UserSpaceModel } from 'src/user/entity/user-space.entity';
@@ -53,4 +54,7 @@ export class SpaceModel {
 
   @OneToMany(() => PostModel, (post) => post.space)
   posts: PostModel[];
+
+  @OneToMany(() => InteractionModel, (interaction) => interaction.space)
+  interactions: InteractionModel[];
 }
