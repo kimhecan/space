@@ -65,4 +65,7 @@ export class UserModel {
 
   @OneToMany(() => InteractionModel, (interaction) => interaction.user)
   interactions: InteractionModel[];
+
+  @OneToMany(() => InteractionModel, (userPostStatus) => userPostStatus.user)
+  userPostStatus: InteractionModel[];
 }

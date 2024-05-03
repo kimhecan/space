@@ -20,6 +20,7 @@ import { InteractionModule } from './interaction/interaction.module';
 import { PostModule } from './post/post.module';
 import { SpaceModule } from './space/space.module';
 import { UserModule } from './user/user.module';
+import { UserPostStatusModel } from 'src/user/entity/user-post-status.entity';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { UserModule } from './user/user.module';
         PostModel,
         ChatModel,
         InteractionModel,
+        UserPostStatusModel,
       ],
       synchronize: true,
     }),

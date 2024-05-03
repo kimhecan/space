@@ -12,6 +12,7 @@ import { UserSpaceModel } from 'src/user/entity/user-space.entity';
 import { SpaceRoleModel } from 'src/space/entity/space-role.entity';
 import { SpaceModel } from 'src/space/entity/space.entity';
 import { SpaceService } from 'src/space/space.service';
+import { UserPostStatusModel } from 'src/user/entity/user-post-status.entity';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { SpaceService } from 'src/space/space.service';
       UserModel,
       UserSpaceModel,
       SpaceRoleModel,
+      UserPostStatusModel,
     ]),
   ],
   controllers: [PostController],

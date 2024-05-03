@@ -15,6 +15,7 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
 } from 'typeorm';
+import { UserPostStatusModel } from 'src/user/entity/user-post-status.entity';
 
 @Entity('post')
 export class PostModel {
@@ -66,4 +67,7 @@ export class PostModel {
 
   @OneToMany(() => InteractionModel, (interaction) => interaction.post)
   interactions: InteractionModel[];
+
+  @OneToMany(() => UserPostStatusModel, (userPostStatus) => userPostStatus.post)
+  userPostStatus: UserPostStatusModel[];
 }

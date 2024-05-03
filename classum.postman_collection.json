@@ -1,0 +1,720 @@
+{
+	"info": {
+		"_postman_id": "1f2aa2de-8089-4353-8eb2-b349a89462a1",
+		"name": "classum",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10372778"
+	},
+	"item": [
+		{
+			"name": "파일저장하기",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "files",
+							"type": "file",
+							"src": "/Users/kimhecan/Desktop/우수사례 공모전.docx"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://{{host}}/common/files",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"common",
+						"files"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "회원가입하기",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('store access token', function () {",
+							"    pm.environment.set('accessToken', pm.response.json().accessToken);",
+							"})",
+							"",
+							"pm.test('Store refresh token',  function () {",
+							"    pm.environment.set('refreshToken', pm.response.json().refreshToken);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\":\"kimhecan1@gmail.com\",\n    \"password\": \"123\",\n    \"name\": \"김희찬\",\n    \"gender\": \"Male\",\n    \"profileImage\": \"52cec797-c730-4788-b964-382628e3a401.png\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/auth/join",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"auth",
+						"join"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "로그인하기",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('store access token', function () {",
+							"    pm.environment.set('accessToken', pm.response.json().accessToken);",
+							"})",
+							"",
+							"pm.test('Store refresh token',  function () {",
+							"    pm.environment.set('refreshToken', pm.response.json().refreshToken);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"email\":\"kimhecan1@gmail.com\",\n    \"password\": \"123\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/auth/login",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "토큰재발급하기",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('store access token', function () {",
+							"    pm.environment.set('accessToken', pm.response.json().accessToken);",
+							"})",
+							"",
+							"pm.test('Store refresh token',  function () {",
+							"    pm.environment.set('refreshToken', pm.response.json().refreshToken);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{refreshToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/auth/token/access",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"auth",
+						"token",
+						"access"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "유저정보확인하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/user/10",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"10"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "본인정보변경하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"password\": \"123\",\n    \"name\": \"김희찬123\",\n    \"gender\": \"Male\",\n    \"profileImage\": \"52cec797-c730-4788-b964-382628e3a401.png\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/user/profile",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"user",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "공간생성하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"sapce1\",\n    \"logo\": \"abc\",\n    \"roles\": [\n        {\n            \"name\": \"role-admin-1\",\n            \"type\": \"admin\"\n        },\n        {\n            \"name\": \"role-participant-1\",\n            \"type\": \"participant\"\n        }\n    ],\n    \"myRole\": {\n        \"name\": \"role-admin-1\",\n        \"type\": \"admin\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/space",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "내가속한공간리스트",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/space/my-space",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space",
+						"my-space"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "특정공간가입하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"code\": \"526cadd5\",\n    \"role\": {\n        \"name\": \"role-participant-1\",\n        \"type\": \"participant\"\n    }\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/space/:spaceId/join",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space",
+						":spaceId",
+						"join"
+					],
+					"variable": [
+						{
+							"key": "spaceId",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "공강의 참여코드",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "공간소유자임명하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/space/:spaceId/owner/:newOwnerId",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space",
+						":spaceId",
+						"owner",
+						":newOwnerId"
+					],
+					"variable": [
+						{
+							"key": "spaceId",
+							"value": "10"
+						},
+						{
+							"key": "newOwnerId",
+							"value": ""
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "특정유저를 공간에서 역할 변경하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"role\": \"role-admin-1\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/space/:spaceId/user/:userId/role",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space",
+						":spaceId",
+						"user",
+						":userId",
+						"role"
+					],
+					"variable": [
+						{
+							"key": "spaceId",
+							"value": "10"
+						},
+						{
+							"key": "userId",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "공간삭제하기",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/space/:spaceId",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space",
+						":spaceId"
+					],
+					"variable": [
+						{
+							"key": "spaceId",
+							"value": "8"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "역할삭제하기",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"role\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/space/:spaceId/role",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"space",
+						":spaceId",
+						"role"
+					],
+					"variable": [
+						{
+							"key": "spaceId",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "게시물작성",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"title\",\n    \"content\": \"content\",\n    \"type\": \"Question\",\n    \"anonymous\": false,\n    \"attachmentUrl\": \"asdfasdf\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://{{host}}/post?spaceId=10",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"post"
+					],
+					"query": [
+						{
+							"key": "spaceId",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "공간의 게시물 리스트",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "특정 게시물",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "내가쓴 게시물 리스트",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/post/me",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"post",
+						"me"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "특정 게시물 삭제",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{accessToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/post/:postId?spaceId=10",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"post",
+						":postId"
+					],
+					"query": [
+						{
+							"key": "spaceId",
+							"value": "10"
+						}
+					],
+					"variable": [
+						{
+							"key": "postId",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "댓글작성",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://{{host}}/chat?postId",
+					"protocol": "http",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"chat"
+					],
+					"query": [
+						{
+							"key": "postId",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "댓글삭제",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "내가쓴 댓글",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "저도 궁금해요",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "좋아요",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "통계",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

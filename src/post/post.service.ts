@@ -14,6 +14,7 @@ import { ChatModel } from 'src/chat/entity/chat.entity';
 import { ExtendedPostModel } from 'src/post/type';
 import { SpaceModel } from 'src/space/entity/space.entity';
 import { SpaceService } from 'src/space/space.service';
+import { UserPostStatusModel } from 'src/user/entity/user-post-status.entity';
 
 @Injectable()
 export class PostService {
@@ -28,6 +29,9 @@ export class PostService {
     private spaceRoleRepository: Repository<SpaceRoleModel>,
     @InjectRepository(ChatModel)
     private chatRepository: Repository<ChatModel>,
+    @InjectRepository(UserPostStatusModel)
+    private userPostStatusRepository: Repository<UserPostStatusModel>,
+
     private readonly spaceService: SpaceService,
   ) {}
 
@@ -120,8 +124,18 @@ export class PostService {
       userId,
     );
 
+    await this.userPostStatusRepository.save({
+      lastChecked: new Date(),
+      user: {
+        id: userId,
+      },
+      post: {
+        id: postId,
+      },
+    });
+
     // 익명 상태로 작성된 게시글은 작성자 본인 또는 관리자만 조회 가능
-    return this.removeUserInfoForAnonymous({
+    return this.removedUserInfoForAnonymousPost({
       post,
       isPostOwner,
       isAdminUser,
@@ -148,24 +162,24 @@ export class PostService {
         'chats.user',
         'chats.replies',
         'chats.replies.user',
+        'userPostStatus',
+        'userPostStatus.user',
       ],
     });
 
-    const postStats = await Promise.all(
-      posts.map(async (post) => {
-        const chatCount = post.chats.filter(
-          (chat) => chat.user.id !== post.user.id,
-        ).length;
-        const uniqueChatters = new Set(
-          post.chats
-            .filter((chat) => chat.user.id !== post.user.id)
-            .map((chat) => chat.user.id),
-        ).size;
-        return { post, chatCount, uniqueChatters };
-      }),
-    );
+    const postStats = posts.map((post) => {
+      const chatCount = post.chats.filter(
+        (chat) => chat.user.id !== post.user.id,
+      ).length;
+      const uniqueChatters = new Set(
+        post.chats
+          .filter((chat) => chat.user.id !== post.user.id)
+          .map((chat) => chat.user.id),
+      ).size;
+      return { post, chatCount, uniqueChatters };
+    });
 
-    const sortedPosts = postStats
+    const popularPosts = postStats
       .sort((a, b) => {
         if (a.chatCount === b.chatCount) {
           return b.uniqueChatters - a.uniqueChatters;
@@ -174,14 +188,14 @@ export class PostService {
       })
       .slice(0, 5);
 
-    const popularPostsIds = new Set(sortedPosts.map((item) => item.post.id));
+    const popularPostsIds = new Set(popularPosts.map((item) => item.post.id));
 
     const anonymousProcessedPosts = await Promise.all(
       posts.map(async (post) => {
         const { isPostOwner, isAdminUser } =
           await this.getPostOwnerAndAdminUser(spaceId, post.user.id, userId);
 
-        return this.removeUserInfoForAnonymous({
+        return this.removedUserInfoForAnonymousPost({
           post,
           isPostOwner,
           isAdminUser,
@@ -190,19 +204,43 @@ export class PostService {
       }),
     );
 
-    const popularProcessedPosts = await Promise.all(
-      anonymousProcessedPosts.map(async (post) => {
-        const newPost = { ...post } as ExtendedPostModel;
-        if (popularPostsIds.has(post.id)) {
-          newPost.isPopular = true;
-        } else {
-          newPost.isPopular = false;
-        }
-        return newPost;
-      }),
-    );
+    const popularProcessedPosts = anonymousProcessedPosts.map((post) => {
+      const newPost = { ...post } as ExtendedPostModel;
+      if (popularPostsIds.has(post.id)) {
+        newPost.isPopular = true;
+      } else {
+        newPost.isPopular = false;
+      }
+      return newPost;
+    });
 
-    return popularProcessedPosts;
+    const resultPosts = popularProcessedPosts.map((post) => {
+      const lastInteraction = post.userPostStatus.find(
+        (postStatus) => postStatus.user.id === userId,
+      );
+
+      const isNew = lastInteraction ? false : true;
+      const isUpdated = lastInteraction
+        ? post.updatedAt > lastInteraction.lastChecked
+        : false;
+      const hasNewChats = lastInteraction
+        ? post.chats.some(
+            (chat) => chat.createdAt > lastInteraction?.lastChecked,
+          )
+        : false;
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { userPostStatus, ...resultPost } = post;
+
+      return {
+        ...resultPost,
+        isNew,
+        isUpdated,
+        hasNewChats,
+      };
+    });
+
+    return resultPosts;
   }
 
   async listPostFromMe(userId: number) {
@@ -313,7 +351,7 @@ export class PostService {
     };
   }
 
-  async removeUserInfoForAnonymous({
+  async removedUserInfoForAnonymousPost({
     post,
     isPostOwner,
     isAdminUser,

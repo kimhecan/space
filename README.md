@@ -1,6 +1,6 @@
 ## ERD
 
-![스크린샷 2024-05-03 오전 12 38 22](https://github.com/kimhecan/space/assets/39295881/e4ae7c48-8b21-432c-a923-30a998bc5fab)
+![스크린샷 2024-05-03 오전 12 38 22](https://github.com/kimhecan/space/assets/39295881/1cd3089d-1050-4c53-bb6d-608ec58c0b9c)
 
 
 ## 환경설정
@@ -452,42 +452,113 @@ $ npm run start:prod
   ```json
   [
     {
-        "id": 4,
-        "title": "질문있어요",
-        "content": "내용입니.",
+        "id": 6,
+        "title": "질문있어요1",
+        "content": "내용입니다.1",
         "type": "Question",
-        "anonymous": true,
+        "anonymous": false,
         "attachmentUrl": "asdfasdf.png",
-        "createdAt": "2024-05-01T12:07:48.878Z",
-        "updatedAt": "2024-05-01T12:07:48.878Z",
+        "createdAt": "2024-05-02T06:05:36.748Z",
+        "updatedAt": "2024-05-02T06:05:36.748Z",
         "deletedAt": null,
-        // 익명게시글인 경우 && (관리자 또는 본인이 아닌 경우)
-        "user": null,
-        "chats": [],
-        "isPopular": true
+        "user": {
+            "id": 16,
+            "email": "kimhecan3@gmail.com",
+            "name": "김희찬3",
+            "gender": "Male",
+            "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+            "createdAt": "2024-05-02T06:02:56.208Z",
+            "updatedAt": "2024-05-02T06:02:56.208Z",
+            "deletedAt": null
+        },
+        "chats": [
+            {
+                "id": 8,
+                "content": "댓글입니다.1",
+                "anonymous": true,
+                "createdAt": "2024-05-02T06:14:06.248Z",
+                "updatedAt": "2024-05-02T06:14:06.000Z",
+                "deletedAt": null,
+                "user": {
+                    "id": 16,
+                    "email": "kimhecan3@gmail.com",
+                    "name": "김희찬3",
+                    "gender": "Male",
+                    "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+                    "createdAt": "2024-05-02T06:02:56.208Z",
+                    "updatedAt": "2024-05-02T06:02:56.208Z",
+                    "deletedAt": null
+                },
+                "replies": []
+            }
+        ],
+        "isPopular": true,
+        "isNew": false,
+        "isUpdated": false,
+        "hasNewChats": false
     },
     {
-        "id": 5,
+        "id": 7,
         "title": "질문있어요2",
         "content": "내용입니다.2",
         "type": "Question",
         "anonymous": false,
         "attachmentUrl": "asdfasdf.png",
-        "createdAt": "2024-05-01T12:08:58.421Z",
-        "updatedAt": "2024-05-01T12:08:58.421Z",
+        "createdAt": "2024-05-02T06:06:46.909Z",
+        "updatedAt": "2024-05-02T06:06:46.909Z",
         "deletedAt": null,
         "user": {
-            "id": 13,
-            "email": "kimhecan123@gmail.com",
-            "name": "김희찬123",
+            "id": 16,
+            "email": "kimhecan3@gmail.com",
+            "name": "김희찬3",
             "gender": "Male",
             "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
-            "createdAt": "2024-05-01T11:44:17.013Z",
-            "updatedAt": "2024-05-01T11:44:17.013Z",
+            "createdAt": "2024-05-02T06:02:56.208Z",
+            "updatedAt": "2024-05-02T06:02:56.208Z",
             "deletedAt": null
         },
         "chats": [],
-        "isPopular": true
+        "isPopular": true,
+        "isNew": true,
+        "isUpdated": false,
+        "hasNewChats": false
+    },
+    {
+        "id": 8,
+        "title": "질문있어요2222",
+        "content": "내용입니다.2",
+        "type": "Question",
+        "anonymous": false,
+        "attachmentUrl": "asdfasdf.png",
+        "createdAt": "2024-05-02T15:42:15.065Z",
+        "updatedAt": "2024-05-02T15:42:15.065Z",
+        "deletedAt": null,
+        "user": {
+            "id": 15,
+            "email": "kimhecan2@gmail.com",
+            "name": "김희찬2",
+            "gender": "Male",
+            "profileImage": "52cec797-c730-4788-b964-382628e3a401.png",
+            "createdAt": "2024-05-02T06:02:50.437Z",
+            "updatedAt": "2024-05-02T06:02:50.437Z",
+            "deletedAt": null
+        },
+        "chats": [
+            {
+                "id": 9,
+                "content": "댓글입니다.1",
+                "anonymous": true,
+                "createdAt": "2024-05-02T15:42:29.236Z",
+                "updatedAt": "2024-05-02T15:42:29.000Z",
+                "deletedAt": null,
+                "user": null,
+                "replies": []
+            }
+        ],
+        "isPopular": true,
+        "isNew": true,
+        "isUpdated": false,
+        "hasNewChats": false
     }
   ]
   ```
@@ -732,3 +803,19 @@ $ npm run start:prod
     }
   ```
 
+
+
+### 신규 기능, 게시글 상태 표시
+
+클라썸은 유저들의 사용성 개선을 위해 게시글의 업데이트 여부를 유저에게 보여주고자 합니다.
+
+1.  **게시글 목록에서 유저들에게 다음의 정보를 추가로 보여줍니다.**
+    - 새로운 게시글입니다.
+    - 게시글이 수정되었습니다.
+    - 새로운 댓글이 달렸습니다.
+    - (위의 정보는 유저가 게시글을 확인하는 순간 더 이상 표시되지 않습니다.)
+2. **유저에게 표시하기 위한 정보가 여러가지일 때, 가장 높은 우선순위를 가진 정보 하나만을 표시합니다.**
+    - 우선 순위는 위 정보 목록에서 상단에 위치할 수록 높습니다.
+
+
+-> getPost와 listPost에 로직을 추가했습니다.
